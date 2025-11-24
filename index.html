@@ -125,12 +125,18 @@
             <!-- Customer View Section -->
             <section id="customerView" class="space-y-6">
 
-                <!-- Shop Selector (Switching Menus) -->
-                <div class="bg-white p-3 rounded-xl shadow-lg flex flex-col sm:flex-row items-start sm:items-center mb-6">
-                    <label for="shopSelector" class="font-semibold text-gray-700 mr-3 mb-2 sm:mb-0 whitespace-nowrap flex items-center">
-                        <i class="ph ph-storefront text-xl mr-2 text-blue-600"></i> 選擇店家菜單:
-                    </label>
-                    <select id="shopSelector" class="flex-grow w-full sm:w-auto p-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 transition-shadow duration-200"></select>
+                <!-- Shop Selector and Group Buy Button (Visible on desktop/tablet) -->
+                <div class="bg-white p-3 rounded-xl shadow-lg flex flex-col sm:flex-row items-start sm:items-center mb-6 justify-between gap-3">
+                    <div class="flex flex-grow items-center w-full sm:w-auto">
+                        <label for="shopSelector" class="font-semibold text-gray-700 mr-3 mb-2 sm:mb-0 whitespace-nowrap flex items-center">
+                            <i class="ph ph-storefront text-xl mr-2 text-blue-600"></i> 選擇店家菜單:
+                        </label>
+                        <select id="shopSelector" class="flex-grow w-full sm:w-auto p-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 transition-shadow duration-200"></select>
+                    </div>
+                    <!-- Desktop/Tablet Group Buy Button -->
+                    <button id="startGroupOrderBtnDesktop" class="hidden sm:flex items-center bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-xl shadow-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="ph ph-users-three text-lg mr-2"></i> 發起團購
+                    </button>
                 </div>
 
                 <!-- Menu Display -->
@@ -169,8 +175,8 @@
                 <span id="mobileTotalPrice" class="text-lg font-extrabold">NT$ 0</span>
             </button>
 
-            <!-- Group Order Button (Visible in Customer View) -->
-            <button id="startGroupOrderBtn" class="w-full mt-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-xl shadow-md transition-colors duration-200 flex items-center justify-center">
+            <!-- Group Order Button (Only visible on mobile if not in group order) -->
+            <button id="startGroupOrderBtnMobile" class="w-full mt-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-xl shadow-md transition-colors duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
                 <i class="ph ph-users-three text-lg mr-2"></i> 發起團購
             </button>
         </div>
@@ -260,7 +266,7 @@
         const ADMIN_KEY = 'admin123';
 
         // =========================================================================
-        // !!! 已整合您的 Firebase 配置資訊 !!!
+        // !!! 已整合您的 Firebase 配置資訊 (v12.6.0)!!!
         // =========================================================================
 
         // 1. 設定一個固定且唯一的應用程式 ID (使用 Project ID)
@@ -284,9 +290,11 @@
         const ORDERS_COLLECTION_PATH = `/artifacts/${APP_ID}/public/data/orders`;
         const GROUP_ORDERS_COLLECTION_PATH = `/artifacts/${APP_ID}/public/data/groupOrders`;
 
-        // Get the group order button element
-        const startGroupOrderBtn = document.getElementById('startGroupOrderBtn');
+        // Get the group order button elements
         const shopSelector = document.getElementById('shopSelector');
+        const startGroupOrderBtnDesktop = document.getElementById('startGroupOrderBtnDesktop');
+        const startGroupOrderBtnMobile = document.getElementById('startGroupOrderBtnMobile');
+        const modeToggleBtn = document.getElementById('modeToggleBtn'); // Re-fetching for listener setup
 
         // --- Utility Functions ---
 
@@ -462,6 +470,8 @@
                 document.getElementById('header').classList.add('bg-gray-800');
                 document.getElementById('mobileCartFloat').classList.add('hidden');
                 document.getElementById('groupHeader').classList.add('hidden');
+                
+                startGroupOrderBtnDesktop?.classList.add('hidden'); // Hide desktop group buy button
             } else { // customer mode
                 isCustomerMode = true;
                 document.getElementById('adminView').classList.add('hidden');
@@ -475,14 +485,16 @@
                     document.getElementById('mobileCartFloat').classList.remove('hidden');
                 }
 
-                // Show/Hide group header based on group status
+                // Show/Hide group header and buttons based on group status
                 if (currentGroupOrderId) {
                     document.getElementById('groupHeader').classList.remove('hidden');
-                    startGroupOrderBtn.classList.add('hidden');
+                    startGroupOrderBtnDesktop?.classList.add('hidden');
+                    startGroupOrderBtnMobile?.classList.add('hidden');
                     shopSelector.disabled = true; // Disable shop switching during group order
                 } else {
                     document.getElementById('groupHeader').classList.add('hidden');
-                    startGroupOrderBtn.classList.remove('hidden');
+                    startGroupOrderBtnDesktop?.classList.remove('hidden');
+                    // Mobile button visibility is controlled by the parent #mobileCartFloat
                     shopSelector.disabled = false;
                 }
             }
@@ -502,6 +514,7 @@
                 });
                 shops = fetchedShops.sort((a, b) => a.name.localeCompare(b.name, 'zh-TW'));
 
+                // IMPORTANT: If shops are empty, try to initialize demo only if in Admin mode
                 if (shops.length === 0 && !isCustomerMode) {
                     initializeDemoShop(); // Create a default shop if none exists
                 }
@@ -625,7 +638,6 @@
         });
 
         // --- Shopping Cart Logic ---
-        // ... (addToCart, removeFromCart, calculateCartTotals, updateLocalCart remain the same) ...
 
         function addToCart(itemId) {
             const item = menuItems.find(i => i.id === itemId);
@@ -791,6 +803,8 @@
                     // Show group header and hide selector
                     document.getElementById('groupHeader').classList.remove('hidden');
                     shopSelector.disabled = true;
+                    startGroupOrderBtnDesktop?.classList.add('hidden');
+                    startGroupOrderBtnMobile?.classList.add('hidden');
 
                 } else {
                     console.log("Group order not found, exiting group mode.");
@@ -910,28 +924,30 @@
             } else {
                 renderAdminShopList();
                 if (currentAdminShopId) {
+                    // Only update menu listener if admin view is active and a shop is selected
+                    // The menu listener is already set in selectAdminShop, so just render the admin menu.
                     renderAdminMenu();
                 }
             }
+            // Ensure group buy buttons are correctly enabled/disabled based on shop selection and group status
+            const isDisabled = !currentShopId || currentGroupOrderId;
+            if (startGroupOrderBtnDesktop) startGroupOrderBtnDesktop.disabled = isDisabled;
+            if (startGroupOrderBtnMobile) startGroupOrderBtnMobile.disabled = isDisabled;
         }
 
         function renderShopSelector() {
             // Customer Shop Selector
             shopSelector.innerHTML = '';
-            const currentShop = shops.find(s => s.id === currentShopId);
-
+            
             if (shops.length === 0) {
                  shopSelector.insertAdjacentHTML('beforeend', `<option value="">無可用店家</option>`);
                  shopSelector.disabled = true;
-                 startGroupOrderBtn.disabled = true;
             } else {
                 shops.forEach(shop => {
                     const selected = shop.id === currentShopId ? 'selected' : '';
                     shopSelector.insertAdjacentHTML('beforeend', `<option value="${shop.id}" ${selected}>${shop.name}</option>`);
                 });
                  shopSelector.disabled = currentGroupOrderId !== null;
-                 startGroupOrderBtn.disabled = false;
-                 startGroupOrderBtn.innerHTML = '<i class="ph ph-users-three text-lg mr-2"></i> 發起團購';
             }
         }
 
@@ -1120,11 +1136,16 @@
             if (shopName === false || shopName === null || shopName.trim() === '') return;
 
             try {
-                await addDoc(collection(db, SHOPS_COLLECTION_PATH), {
+                const docRef = await addDoc(collection(db, SHOPS_COLLECTION_PATH), {
                     name: shopName.trim(),
                     createdAt: new Date()
                 });
-                await showModal('成功', `店家 ${shopName} 已新增！`);
+                
+                // FIX 1: Automatically select the newly added shop for editing
+                selectAdminShop(docRef.id);
+                
+                await showModal('成功', `店家 ${shopName} 已新增，並已自動為您切換到「編輯菜單」模式。`);
+
             } catch (e) {
                 console.error("Error adding shop:", e);
                 await showModal('錯誤', '新增店家失敗。');
@@ -1176,7 +1197,7 @@
 
         // --- Admin Menu Actions ---
 
-        document.getElementById('modeToggleBtn').addEventListener('click', async () => {
+        modeToggleBtn.addEventListener('click', async () => {
             if (isCustomerMode) {
                 const key = await showModal('管理員登入', '請輸入管理員密鑰:', '登入', '取消', 'password');
                 if (key === ADMIN_KEY) {
@@ -1416,7 +1437,11 @@
         }
 
         document.getElementById('openCartBtnMobile').addEventListener('click', showCartModal);
-        document.getElementById('startGroupOrderBtn').addEventListener('click', createGroupOrder);
+        
+        // FIX 2: Attach createGroupOrder to both desktop and mobile buttons
+        if (startGroupOrderBtnDesktop) startGroupOrderBtnDesktop.addEventListener('click', createGroupOrder);
+        if (startGroupOrderBtnMobile) startGroupOrderBtnMobile.addEventListener('click', createGroupOrder);
+
 
         document.getElementById('copyGroupLinkBtn').addEventListener('click', async () => {
             const url = window.location.href;
