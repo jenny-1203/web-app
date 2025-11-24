@@ -217,9 +217,28 @@
 
         // --- Configuration ---
         const ADMIN_KEY = 'admin123';
-        const APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-        const INITIAL_AUTH_TOKEN = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        
+        // =========================================================================
+        // !!! 已整合您的 Firebase 配置資訊 !!!
+        // =========================================================================
+        
+        // 1. 設定一個固定且唯一的應用程式 ID (使用 Project ID)
+        const APP_ID = 'order-app-78120'; 
+
+        // 2. 貼上您從 Firebase Console 複製的配置 JSON 物件
+        const firebaseConfig = {
+            apiKey: "AIzaSyDRLuIf3PNueBmvKCdASDeU0OgSuqvVI4s",
+            authDomain: "order-app-78120.firebaseapp.com",
+            projectId: "order-app-78120",
+            storageBucket: "order-app-78120.firebasestorage.app",
+            messagingSenderId: "808140941952",
+            appId: "1:808140941952:web:4cbca1137338b6899d5465",
+            measurementId: "G-EQ20QLNR5G"
+        };
+        const INITIAL_AUTH_TOKEN = null; // 保持為 null (用於 Vercel 部署)
+
+        // =========================================================================
+        
         const MENU_COLLECTION_PATH = `/artifacts/${APP_ID}/public/data/menu`;
         const ORDERS_COLLECTION_PATH = `/artifacts/${APP_ID}/public/data/orders`;
         const GROUP_ORDERS_COLLECTION_PATH = `/artifacts/${APP_ID}/public/data/groupOrders`;
@@ -323,13 +342,17 @@
 
         async function firebaseInit() {
             try {
-                if (Object.keys(firebaseConfig).length > 0) {
+                // Check if firebaseConfig is provided and is a non-empty object
+                if (firebaseConfig && Object.keys(firebaseConfig).length > 0 && firebaseConfig.projectId) {
                     app = initializeApp(firebaseConfig);
                     db = getFirestore(app);
                     auth = getAuth(app);
                 } else {
-                    console.error("Firebase configuration is missing.");
-                    await showModal('錯誤', 'Firebase 配置遺失，資料庫功能將無法使用。');
+                    console.error("Firebase configuration is missing or invalid.");
+                    // Only show critical error if we are running outside the environment
+                    if (typeof __firebase_config === 'undefined') {
+                         await showModal('錯誤', 'Firebase 配置遺失，資料庫功能將無法使用。請手動編輯 index.html 檔案，填入您的 Firebase 配置資訊。');
+                    }
                     return;
                 }
 
