@@ -55,7 +55,7 @@
         <!-- Main Content Area -->
         <main class="flex-grow p-4 pb-20 sm:pb-4 transition-all duration-300">
 
-            <!-- Admin View Section -->
+            <!-- Admin View Section (Admin Interface is now a completely separate section) -->
             <section id="adminView" class="hidden space-y-8 bg-white p-6 rounded-xl shadow-2xl">
                 <h2 class="text-2xl font-bold text-gray-800 border-b pb-3 mb-4 flex items-center">
                     <i class="ph ph-gear-six text-2xl mr-2"></i> 系統管理後台
@@ -122,7 +122,7 @@
 
             </section>
 
-            <!-- Customer View Section -->
+            <!-- Customer View Section (Main Ordering Interface) -->
             <section id="customerView" class="space-y-6">
 
                 <!-- Shop Selector and Group Buy Button (Visible on desktop/tablet) -->
@@ -471,7 +471,10 @@
                 document.getElementById('mobileCartFloat').classList.add('hidden');
                 document.getElementById('groupHeader').classList.add('hidden');
                 
-                startGroupOrderBtnDesktop?.classList.add('hidden'); // Hide desktop group buy button
+                // Ensure Admin Menu Management section is hidden if no shop is selected
+                if (!currentAdminShopId) {
+                     document.getElementById('shopMenuManagement').classList.add('hidden');
+                }
             } else { // customer mode
                 isCustomerMode = true;
                 document.getElementById('adminView').classList.add('hidden');
@@ -923,11 +926,8 @@
                 updateLocalCart();
             } else {
                 renderAdminShopList();
-                if (currentAdminShopId) {
-                    // Only update menu listener if admin view is active and a shop is selected
-                    // The menu listener is already set in selectAdminShop, so just render the admin menu.
-                    renderAdminMenu();
-                }
+                // Admin menu rendering depends on currentAdminShopId and is handled by updateMenuListener
+                renderAdminMenu(); 
             }
             // Ensure group buy buttons are correctly enabled/disabled based on shop selection and group status
             const isDisabled = !currentShopId || currentGroupOrderId;
@@ -1141,10 +1141,10 @@
                     createdAt: new Date()
                 });
                 
-                // FIX 1: Automatically select the newly added shop for editing
+                // FIX 3: Automatically select the newly added shop for editing AND ensure UI is rendered
                 selectAdminShop(docRef.id);
                 
-                await showModal('成功', `店家 ${shopName} 已新增，並已自動為您切換到「編輯菜單」模式。`);
+                await showModal('成功', `店家 ${shopName.trim()} 已新增，並已自動為您切換到「編輯菜單」模式。`);
 
             } catch (e) {
                 console.error("Error adding shop:", e);
