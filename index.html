@@ -44,7 +44,7 @@
         <div id="groupHeader" class="sticky top-[72px] z-10 bg-indigo-100 text-indigo-800 p-3 shadow-md border-b border-indigo-200 hidden flex-col sm:flex-row items-center justify-between gap-2 transition-all duration-300">
             <div class="flex items-center">
                  <i class="ph ph-users-three text-xl mr-2"></i>
-                <span class="font-semibold text-sm">團購中!</span>
+                <span class="font-semibold text-sm">團購中! 當前店家：<span id="groupShopName" class="text-indigo-900 font-extrabold"></span></span>
             </div>
             <button id="copyGroupLinkBtn" class="flex items-center bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium py-1 px-3 rounded-lg shadow-lg transition-colors duration-200">
                 <i class="ph ph-share-network text-base mr-1"></i> 分享此團購連結
@@ -58,43 +58,65 @@
             <!-- Admin View Section -->
             <section id="adminView" class="hidden space-y-8 bg-white p-6 rounded-xl shadow-2xl">
                 <h2 class="text-2xl font-bold text-gray-800 border-b pb-3 mb-4 flex items-center">
-                    <i class="ph ph-gear-six text-2xl mr-2"></i> 菜單管理後台
+                    <i class="ph ph-gear-six text-2xl mr-2"></i> 系統管理後台
                 </h2>
 
-                <!-- AI Menu Generator -->
-                <div class="space-y-4 border p-4 rounded-lg bg-yellow-50">
+                <!-- Shop Management -->
+                <div class="space-y-4 border p-4 rounded-lg bg-gray-50">
                     <h3 class="text-xl font-semibold text-gray-700 flex items-center">
-                        <i class="ph ph-robot text-xl mr-2 text-yellow-600"></i> 🤖 AI 菜單生成器
+                        <i class="ph ph-storefront text-xl mr-2 text-blue-600"></i> 店家管理
                     </h3>
-                    <p class="text-sm text-gray-600">貼上您的菜單文本（名稱 價格 描述），AI 會自動結構化。</p>
-                    <textarea id="menuInput" rows="5" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-shadow duration-200" placeholder="範例：招牌牛肉麵 $180 好吃又大碗"></textarea>
-                    <button id="generateMenuBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl shadow-lg transition-colors duration-200 flex items-center justify-center">
-                        <i class="ph ph-magic-wand text-lg mr-2"></i> 生成並預覽菜單項目
+                    <button id="addNewShopBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg shadow-md transition-colors duration-200 flex items-center justify-center">
+                        <i class="ph ph-plus-circle text-lg mr-2"></i> 新增店家
                     </button>
-                    <div id="aiLoading" class="text-center text-blue-500 font-medium hidden">
-                        <i class="ph ph-spinner animate-spin text-2xl"></i> AI 正在解析菜單中...
+                    <div id="shopListContainer" class="space-y-3">
+                        <!-- Shop list will be inserted here -->
+                        <p class="text-center text-gray-500" id="noShopsMessage">目前沒有店家</p>
                     </div>
                 </div>
 
-                <!-- AI Generated Menu Preview -->
-                <div id="aiPreviewContainer" class="hidden space-y-4 border-t pt-4">
-                    <h3 class="text-xl font-semibold text-gray-800">AI 建議菜單 (待確認)</h3>
-                    <div id="aiPreviewList" class="space-y-3">
-                        <!-- AI generated items will be inserted here -->
-                    </div>
-                    <button id="saveAllAIToMenuBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl shadow-lg transition-colors duration-200 mt-4">
-                         ✅ 儲存全部 AI 項目到菜單
-                    </button>
-                </div>
+                <!-- Menu Management (Visible only if a shop is selected/managed) -->
+                <div id="shopMenuManagement" class="space-y-4 border-t pt-4 hidden">
+                    <h3 class="text-2xl font-bold text-gray-800 flex items-center">
+                        <i class="ph ph-list text-2xl mr-2"></i> <span id="currentAdminShopName"></span> 菜單管理
+                    </h3>
 
-                <!-- Manual Menu Management -->
-                <div class="space-y-4 border-t pt-4">
-                    <h3 class="text-xl font-semibold text-gray-800">手動菜單管理</h3>
-                    <button id="addNewItemBtn" class="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 rounded-lg shadow-md transition-colors duration-200 flex items-center justify-center">
-                        <i class="ph ph-plus-circle text-lg mr-2"></i> 新增菜單項目
-                    </button>
-                    <div id="menuItemsContainer" class="space-y-4">
-                        <!-- Menu items for admin editing will be inserted here -->
+                    <!-- AI Menu Generator -->
+                    <div class="space-y-4 border p-4 rounded-lg bg-yellow-50">
+                        <h3 class="text-xl font-semibold text-gray-700 flex items-center">
+                            <i class="ph ph-robot text-xl mr-2 text-yellow-600"></i> 🤖 AI 菜單生成器
+                        </h3>
+                        <p class="text-sm text-gray-600">貼上您的菜單文本（名稱 價格 描述），AI 會自動結構化。</p>
+                        <textarea id="menuInput" rows="5" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-shadow duration-200" placeholder="範例：招牌牛肉麵 $180 好吃又大碗"></textarea>
+                        <button id="generateMenuBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl shadow-lg transition-colors duration-200 flex items-center justify-center">
+                            <i class="ph ph-magic-wand text-lg mr-2"></i> 生成並預覽菜單項目
+                        </button>
+                        <div id="aiLoading" class="text-center text-blue-500 font-medium hidden">
+                            <i class="ph ph-spinner animate-spin text-2xl"></i> AI 正在解析菜單中...
+                        </div>
+                    </div>
+
+                    <!-- AI Generated Menu Preview -->
+                    <div id="aiPreviewContainer" class="hidden space-y-4 border-t pt-4">
+                        <h3 class="text-xl font-semibold text-gray-800">AI 建議菜單 (待確認)</h3>
+                        <div id="aiPreviewList" class="space-y-3">
+                            <!-- AI generated items will be inserted here -->
+                        </div>
+                        <button id="saveAllAIToMenuBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl shadow-lg transition-colors duration-200 mt-4">
+                            ✅ 儲存全部 AI 項目到菜單
+                        </button>
+                    </div>
+
+                    <!-- Manual Menu Management -->
+                    <div class="space-y-4 border-t pt-4">
+                        <h3 class="text-xl font-semibold text-gray-800">手動菜單管理</h3>
+                        <button id="addNewItemBtn" class="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 rounded-lg shadow-md transition-colors duration-200 flex items-center justify-center">
+                            <i class="ph ph-plus-circle text-lg mr-2"></i> 新增菜單項目
+                        </button>
+                        <div id="menuItemsContainer" class="space-y-4">
+                            <!-- Menu items for admin editing will be inserted here -->
+                            <p class="text-center text-gray-500" id="noMenuItemsMessage">此店家目前沒有菜單項目</p>
+                        </div>
                     </div>
                 </div>
 
@@ -103,10 +125,25 @@
             <!-- Customer View Section -->
             <section id="customerView" class="space-y-6">
 
+                <!-- Shop Selector (Switching Menus) -->
+                <div class="bg-white p-3 rounded-xl shadow-lg flex flex-col sm:flex-row items-start sm:items-center mb-6">
+                    <label for="shopSelector" class="font-semibold text-gray-700 mr-3 mb-2 sm:mb-0 whitespace-nowrap flex items-center">
+                        <i class="ph ph-storefront text-xl mr-2 text-blue-600"></i> 選擇店家菜單:
+                    </label>
+                    <select id="shopSelector" class="flex-grow w-full sm:w-auto p-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 transition-shadow duration-200"></select>
+                </div>
+
                 <!-- Menu Display -->
                 <div id="menuList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <!-- Menu items will be inserted here -->
                 </div>
+                <p id="loadingMenuMessage" class="text-center text-gray-500 font-medium hidden">
+                    <i class="ph ph-spinner animate-spin text-2xl"></i> 正在載入菜單...
+                </p>
+                <p id="emptyMenuMessage" class="text-center text-gray-500 font-medium hidden">
+                    此店家目前沒有菜單項目。請聯繫管理員上傳菜單。
+                </p>
+
 
                 <!-- Order History (Simple display for the current user) -->
                 <div id="orderHistoryContainer" class="pt-4 border-t mt-6">
@@ -133,8 +170,8 @@
             </button>
 
             <!-- Group Order Button (Visible in Customer View) -->
-            <button id="startGroupOrderBtn" class="w-full mt-2 bg-indigo-500 text-white font-semibold py-2 rounded-xl shadow-md transition-colors duration-200 flex items-center justify-center" disabled>
-                <i class="ph ph-spinner animate-spin text-lg mr-2"></i> 連線中...
+            <button id="startGroupOrderBtn" class="w-full mt-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-xl shadow-md transition-colors duration-200 flex items-center justify-center">
+                <i class="ph ph-users-three text-lg mr-2"></i> 發起團購
             </button>
         </div>
 
@@ -197,7 +234,7 @@
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import {
             getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot,
-            collection, query, where, getDocs, runTransaction, arrayUnion
+            collection, query, where, getDocs, runTransaction, arrayUnion, onLog
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Global Firebase and App variables
@@ -211,19 +248,23 @@
 
         // --- Core App State ---
         let cart = []; // { itemId, quantity, name, price, userId }
-        let menuItems = []; // Full list of menu items from Firestore
+        let menuItems = []; // Full list of menu items from the currently selected shop
+        let shops = []; // List of all available shops: { id, name }
+        let currentShopId = null; // Currently selected shop ID
+        let menuUnsubscribe = null; // Listener cleanup for current menu
         let isCustomerMode = true; // True for Customer, False for Admin
         let aiGeneratedItems = []; // Storage for items parsed by AI before confirmation
+        let currentAdminShopId = null; // Shop ID being edited in Admin view
 
         // --- Configuration ---
         const ADMIN_KEY = 'admin123';
-        
+
         // =========================================================================
         // !!! 已整合您的 Firebase 配置資訊 !!!
         // =========================================================================
-        
+
         // 1. 設定一個固定且唯一的應用程式 ID (使用 Project ID)
-        const APP_ID = 'order-app-78120'; 
+        const APP_ID = 'order-app-78120';
 
         // 2. 貼上您從 Firebase Console 複製的配置 JSON 物件
         const firebaseConfig = {
@@ -238,13 +279,14 @@
         const INITIAL_AUTH_TOKEN = null; // 保持為 null (用於 Vercel 部署)
 
         // =========================================================================
-        
-        const MENU_COLLECTION_PATH = `/artifacts/${APP_ID}/public/data/menu`;
+
+        const SHOPS_COLLECTION_PATH = `/artifacts/${APP_ID}/public/data/shops`;
         const ORDERS_COLLECTION_PATH = `/artifacts/${APP_ID}/public/data/orders`;
         const GROUP_ORDERS_COLLECTION_PATH = `/artifacts/${APP_ID}/public/data/groupOrders`;
 
         // Get the group order button element
         const startGroupOrderBtn = document.getElementById('startGroupOrderBtn');
+        const shopSelector = document.getElementById('shopSelector');
 
         // --- Utility Functions ---
 
@@ -253,10 +295,11 @@
          * @param {string} body
          * @param {string} confirmText
          * @param {string} cancelText
-         * @param {string} inputType 'text' or null
+         * @param {string} inputType 'text', 'password' or null
+         * @param {string} defaultValue Default value for input
          * @returns {Promise<string|boolean>} The input value or true/false for confirmation.
          */
-        function showModal(title, body, confirmText = '確定', cancelText = null, inputType = null) {
+        function showModal(title, body, confirmText = '確定', cancelText = null, inputType = null, defaultValue = '') {
             return new Promise(resolve => {
                 const modal = document.getElementById('genericModal');
                 const modalTitle = document.getElementById('modalTitle');
@@ -267,10 +310,8 @@
 
                 modalTitle.textContent = title;
                 modalBody.textContent = body;
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
 
-                modalInput.value = '';
+                modalInput.value = defaultValue;
                 if (inputType === 'text') {
                     modalInput.type = 'text';
                     modalInput.classList.remove('hidden');
@@ -306,6 +347,9 @@
                 } else {
                     cancelBtn.classList.add('hidden');
                 }
+
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
             });
         }
 
@@ -342,14 +386,12 @@
 
         async function firebaseInit() {
             try {
-                // Check if firebaseConfig is provided and is a non-empty object
                 if (firebaseConfig && Object.keys(firebaseConfig).length > 0 && firebaseConfig.projectId) {
                     app = initializeApp(firebaseConfig);
                     db = getFirestore(app);
                     auth = getAuth(app);
                 } else {
                     console.error("Firebase configuration is missing or invalid.");
-                    // Only show critical error if we are running outside the environment
                     if (typeof __firebase_config === 'undefined') {
                          await showModal('錯誤', 'Firebase 配置遺失，資料庫功能將無法使用。請手動編輯 index.html 檔案，填入您的 Firebase 配置資訊。');
                     }
@@ -366,18 +408,17 @@
                     } else {
                         // Attempt anonymous sign-in if no user is found
                         await signInAnonymously(auth);
-                        // onAuthStateChanged will be called again with the anonymous user
                     }
                     isAuthReady = true;
                     console.log("Firebase Auth Ready. User ID:", userId);
                     startDataListeners();
-                    renderUI(); // Initial UI render after auth is confirmed
+                    // Initial rendering is handled by the data listeners now
                     handleUrlHash();
                 });
 
                 // Use custom token if provided (Canvas environment)
-                if (INITIAL_AUTH_TOKEN) {
-                    await signInWithCustomToken(auth, INITIAL_AUTH_TOKEN);
+                if (typeof __initial_auth_token !== 'undefined') {
+                    await signInWithCustomToken(auth, __initial_auth_token);
                 } else {
                     // Start anonymous sign-in if no token is available
                     await signInAnonymously(auth);
@@ -391,6 +432,8 @@
         // --- Routing and State Management ---
 
         function handleUrlHash() {
+            if (!isAuthReady || !db) return;
+
             const hash = window.location.hash.substring(1);
             const match = hash.match(/^group\/([a-zA-Z0-9]+)$/);
 
@@ -418,7 +461,6 @@
                 document.getElementById('header').classList.remove('bg-blue-600');
                 document.getElementById('header').classList.add('bg-gray-800');
                 document.getElementById('mobileCartFloat').classList.add('hidden');
-                // Ensure group header is hidden in admin mode
                 document.getElementById('groupHeader').classList.add('hidden');
             } else { // customer mode
                 isCustomerMode = true;
@@ -437,9 +479,11 @@
                 if (currentGroupOrderId) {
                     document.getElementById('groupHeader').classList.remove('hidden');
                     startGroupOrderBtn.classList.add('hidden');
+                    shopSelector.disabled = true; // Disable shop switching during group order
                 } else {
                     document.getElementById('groupHeader').classList.add('hidden');
                     startGroupOrderBtn.classList.remove('hidden');
+                    shopSelector.disabled = false;
                 }
             }
             renderUI();
@@ -450,27 +494,36 @@
         function startDataListeners() {
             if (!db || !isAuthReady) return;
 
-            // Enable Group Order button after successful auth/db connection
-            startGroupOrderBtn.disabled = false;
-            startGroupOrderBtn.classList.remove('bg-indigo-500');
-            startGroupOrderBtn.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
-            startGroupOrderBtn.innerHTML = '<i class="ph ph-users-three text-lg mr-2"></i> 發起團購';
-
-            // 1. Menu Listener (Public)
-            onSnapshot(collection(db, MENU_COLLECTION_PATH), (snapshot) => {
-                const items = [];
+            // 1. Shops Listener (Public)
+            onSnapshot(collection(db, SHOPS_COLLECTION_PATH), (snapshot) => {
+                const fetchedShops = [];
                 snapshot.forEach(doc => {
-                    items.push({ id: doc.id, ...doc.data() });
+                    fetchedShops.push({ id: doc.id, ...doc.data() });
                 });
-                menuItems = items;
-                if (menuItems.length === 0) {
-                    // If menu is empty, insert a demo menu (Admin view only)
-                    if (!isCustomerMode) initializeDemoMenu();
+                shops = fetchedShops.sort((a, b) => a.name.localeCompare(b.name, 'zh-TW'));
+
+                if (shops.length === 0 && !isCustomerMode) {
+                    initializeDemoShop(); // Create a default shop if none exists
                 }
-                renderUI();
+
+                renderShopSelector(); // Update the dropdown with new shops
+
+                // If currentShopId is not set or the selected shop was deleted, set a new default
+                if (!currentShopId || !shops.some(s => s.id === currentShopId)) {
+                    currentShopId = shops.length > 0 ? shops[0].id : null;
+                    // Trigger menu update for the new default shop
+                    if (!currentGroupOrderId) {
+                        updateMenuListener(currentShopId);
+                    }
+                } else if (!currentGroupOrderId) {
+                    // Re-render UI to reflect shop changes (e.g., name updates)
+                    renderUI();
+                }
+
             }, (error) => {
-                console.error("Error listening to menu:", error);
+                console.error("Error listening to shops:", error);
             });
+
 
             // 2. User Order History Listener (Private)
             onSnapshot(query(collection(db, ORDERS_COLLECTION_PATH), where("userId", "==", userId)), (snapshot) => {
@@ -483,39 +536,96 @@
                 console.error("Error listening to order history:", error);
             });
 
-            // 3. Group Order Listener (If in group mode)
-            if (currentGroupOrderId) {
-                listenToGroupOrder(currentGroupOrderId);
-            }
+            // 3. Group Order Listener (Only if in group mode - handled by handleUrlHash)
         }
 
-        // --- Menu Management (Admin/Demo) ---
+        function updateMenuListener(shopId) {
+            // Cleanup previous listener if it exists
+            if (menuUnsubscribe) {
+                menuUnsubscribe();
+                menuItems = [];
+                renderMenuList(); // Clear the old menu display immediately
+            }
 
-        async function initializeDemoMenu() {
-            console.log("Initializing demo menu...");
-            const demoItems = [
-                { name: "經典漢堡", price: 120, category: "主食", description: "多汁牛肉與新鮮蔬菜", imageUrl: "https://placehold.co/150x150/7dd3fc/0f172a?text=Burger" },
-                { name: "香脆薯條", price: 60, category: "小點", description: "金黃酥脆，附特製醬料", imageUrl: "https://placehold.co/150x150/fde047/78350f?text=Fries" },
-                { name: "珍珠奶茶", price: 75, category: "飲料", description: "濃郁奶茶，Q彈珍珠", imageUrl: "https://placehold.co/150x150/f0abfc/4a044e?text=Boba" },
-                { name: "和風沙拉", price: 100, category: "輕食", description: "新鮮蔬菜搭配日式醬汁", imageUrl: "https://placehold.co/150x150/a7f3d0/065f46?text=Salad" }
-            ];
+            if (!shopId) {
+                menuItems = [];
+                renderMenuList();
+                document.getElementById('loadingMenuMessage').classList.add('hidden');
+                document.getElementById('emptyMenuMessage').classList.remove('hidden');
+                return;
+            }
 
-            const batch = [];
-            demoItems.forEach(item => {
-                const docRef = doc(collection(db, MENU_COLLECTION_PATH));
-                batch.push(setDoc(docRef, { ...item, createdAt: new Date() }));
+            document.getElementById('loadingMenuMessage').classList.remove('hidden');
+            document.getElementById('emptyMenuMessage').classList.add('hidden');
+
+            const menuCollectionPath = `${SHOPS_COLLECTION_PATH}/${shopId}/menu`;
+            menuUnsubscribe = onSnapshot(collection(db, menuCollectionPath), (snapshot) => {
+                const items = [];
+                snapshot.forEach(doc => {
+                    items.push({ id: doc.id, ...doc.data() });
+                });
+                menuItems = items;
+                document.getElementById('loadingMenuMessage').classList.add('hidden');
+
+                // If menu is empty, show message and prompt admin to initialize
+                if (menuItems.length === 0) {
+                    if (isCustomerMode) {
+                        document.getElementById('emptyMenuMessage').classList.remove('hidden');
+                    } else {
+                        // Admin mode, keep the view functional
+                    }
+                } else {
+                    document.getElementById('emptyMenuMessage').classList.add('hidden');
+                }
+
+                renderUI(); // Render the menu list
+            }, (error) => {
+                console.error("Error listening to menu:", error);
             });
+        }
+
+        // --- Shop Management (Admin/Demo) ---
+
+        async function initializeDemoShop() {
+            console.log("Initializing demo shop...");
+            const defaultShop = { name: "美食小吃店", createdAt: new Date() };
 
             try {
+                // 1. Create default shop
+                const shopDocRef = await addDoc(collection(db, SHOPS_COLLECTION_PATH), defaultShop);
+
+                // 2. Create demo menu items in the shop's subcollection
+                const demoItems = [
+                    { name: "招牌牛肉麵", price: 180, category: "主食", description: "多汁牛肉與新鮮蔬菜", imageUrl: "https://placehold.co/150x150/7dd3fc/0f172a?text=牛肉麵" },
+                    { name: "香脆炸雞排", price: 80, category: "小點", description: "金黃酥脆，一口接一口", imageUrl: "https://placehold.co/150x150/fde047/78350f?text=雞排" },
+                    { name: "經典珍珠奶茶", price: 75, category: "飲料", description: "濃郁奶茶，Q彈珍珠", imageUrl: "https://placehold.co/150x150/f0abfc/4a044e?text=珍奶" },
+                ];
+
+                const batch = [];
+                demoItems.forEach(item => {
+                    const docRef = doc(collection(db, `${SHOPS_COLLECTION_PATH}/${shopDocRef.id}/menu`));
+                    batch.push(setDoc(docRef, { ...item, createdAt: new Date() }));
+                });
+
                 await Promise.all(batch);
-                console.log("Demo menu initialized.");
+                console.log("Demo shop and menu initialized.");
             } catch (e) {
-                console.error("Error setting demo menu:", e);
-                await showModal('錯誤', '無法寫入模擬菜單。');
+                console.error("Error setting demo shop/menu:", e);
+                await showModal('錯誤', '無法寫入模擬店家與菜單。');
             }
         }
 
+        // --- Shop Selector Handler ---
+        shopSelector.addEventListener('change', (e) => {
+            const newShopId = e.target.value;
+            if (newShopId !== currentShopId) {
+                currentShopId = newShopId;
+                updateMenuListener(currentShopId);
+            }
+        });
+
         // --- Shopping Cart Logic ---
+        // ... (addToCart, removeFromCart, calculateCartTotals, updateLocalCart remain the same) ...
 
         function addToCart(itemId) {
             const item = menuItems.find(i => i.id === itemId);
@@ -531,7 +641,8 @@
                 if (existingCartItem) {
                     existingCartItem.quantity += 1;
                 } else {
-                    cart.push({ itemId: item.id, quantity: 1, name: item.name, price: item.price, userId: userId });
+                    // Include shopId in the cart item for checkout history tracking
+                    cart.push({ itemId: item.id, quantity: 1, name: item.name, price: item.price, userId: userId, shopId: currentShopId, shopName: shops.find(s => s.id === currentShopId)?.name || '未知店家' });
                 }
                 updateLocalCart();
             }
@@ -567,8 +678,8 @@
         function updateLocalCart() {
             renderCartModal(cart);
             renderMobileCartFloat(calculateCartTotals(cart));
-            // In personal mode, there's no need to update Firestore for cart
         }
+
 
         // --- Group Order Functions ---
 
@@ -579,46 +690,56 @@
             if (!userId || userId === 'anonymous') {
                 return showModal('提示', '使用者認證未完成，請稍候。');
             }
+            if (!currentShopId) {
+                 return showModal('提示', '請先選擇一個店家再發起團購。');
+            }
 
             try {
                 const docRef = await addDoc(collection(db, GROUP_ORDERS_COLLECTION_PATH), {
                     creatorId: userId,
                     createdAt: new Date(),
                     participants: [userId],
+                    shopId: currentShopId, // IMPORTANT: Store the shop ID
+                    shopName: shops.find(s => s.id === currentShopId)?.name || '未知店家',
                     items: [], // [{itemId, quantity, userId, name, price}]
                     status: 'pending'
                 });
                 await enterGroupOrder(docRef.id, true);
-                const url = window.location.href;
-                await showModal('團購已發起', `您已成功發起團購。現在可以點擊「分享此團購連結」按鈕邀請朋友加入。`, '確定');
+                await showModal('團購已發起', `您已成功發起團購 (店家: ${shops.find(s => s.id === currentShopId)?.name})。現在可以點擊「分享此團購連結」按鈕邀請朋友加入。`, '確定');
             } catch (e) {
                 console.error("Error creating group order:", e);
-                // Inform user about the common security issue in collaborative environments
-                await showModal('錯誤', `無法創建團購單。
-                錯誤原因: ${e.message || '未知錯誤'}
-                
-                【重要提示】此問題通常是因為應用程式的「安全規則」不允許認證用戶寫入公用資料 (Group Orders 集合)。請確認您的帳戶 ID: ${userId} 是否有權限寫入公開集合。`);
+                await showModal('錯誤', `無法創建團購單。錯誤原因: ${e.message}`);
             }
         }
 
         async function enterGroupOrder(groupId, isCreator = false) {
             if (!db || !isAuthReady) return;
 
+            const groupDocRef = doc(db, GROUP_ORDERS_COLLECTION_PATH, groupId);
+            const groupDoc = await getDoc(groupDocRef);
+
+            if (!groupDoc.exists()) {
+                exitGroupOrder();
+                return showModal('錯誤', '無法加入此團購單，可能團購已結束或 ID 無效。');
+            }
+
+            const groupData = groupDoc.data();
+
+            // Set the shop ID based on the group order
+            currentShopId = groupData.shopId;
+            updateMenuListener(currentShopId); // Load the menu for the group's shop
+
             currentGroupOrderId = groupId;
             isGroupOrderCreator = isCreator;
             window.location.hash = `group/${groupId}`; // Update URL hash
 
             // Ensure the user is added to the participant list on join
-            const groupDocRef = doc(db, GROUP_ORDERS_COLLECTION_PATH, groupId);
             try {
                  await updateDoc(groupDocRef, {
                     participants: arrayUnion(userId)
                 });
             } catch (e) {
                 console.error("Error adding user to group participants:", e);
-                // The group order might not exist, exit group order mode
-                exitGroupOrder();
-                return showModal('錯誤', '無法加入此團購單，可能團購已結束或 ID 無效。');
             }
 
             listenToGroupOrder(groupId);
@@ -630,6 +751,10 @@
             isGroupOrderCreator = false;
             cart = []; // Clear local cart
             window.location.hash = ''; // Clear URL hash
+            // Reload the menu for the default/previously selected shop
+            if (currentShopId) {
+                updateMenuListener(currentShopId);
+            }
             setMode('customer'); // Reset to customer mode
         }
 
@@ -638,6 +763,15 @@
              onSnapshot(groupDocRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
+                    // Set group shop name in header
+                    document.getElementById('groupShopName').textContent = data.shopName || '未知店家';
+
+                    // If the group order's shop ID changes (unlikely) or is different from local, update.
+                    if (currentShopId !== data.shopId) {
+                        currentShopId = data.shopId;
+                        updateMenuListener(currentShopId);
+                    }
+
                     // Update local cart with merged items from all participants
                     cart = data.items || [];
                     renderCartModal(cart, data.participants, data.creatorId);
@@ -654,8 +788,10 @@
                         isGroupOrderCreator = false;
                     }
 
-                    // Show group header
+                    // Show group header and hide selector
                     document.getElementById('groupHeader').classList.remove('hidden');
+                    shopSelector.disabled = true;
+
                 } else {
                     console.log("Group order not found, exiting group mode.");
                     exitGroupOrder();
@@ -678,6 +814,7 @@
 
                 const groupData = groupDoc.data();
                 let items = groupData.items || [];
+                // Find existing item by both itemId and userId
                 const existingIndex = items.findIndex(i => i.itemId === itemId && i.userId === userId);
 
                 if (existingIndex !== -1) {
@@ -694,6 +831,7 @@
                         userId: userId,
                         name: itemDetails.name,
                         price: itemDetails.price
+                        // Shop details are stored on the group order itself
                     });
                 }
 
@@ -706,7 +844,8 @@
                 return await showModal('錯誤', '購物車是空的！');
             }
 
-            const confirm = await showModal('確認訂單', `您確定要提交這 ${calculateCartTotals(cart).totalItems} 個項目的訂單嗎？總金額 NT$ ${calculateCartTotals(cart).totalPrice}`, '確定下單', '取消');
+            const totals = calculateCartTotals(cart);
+            const confirm = await showModal('確認訂單', `您確定要提交這 ${totals.totalItems} 個項目的訂單嗎？總金額 NT$ ${totals.totalPrice}`, '確定下單', '取消');
             if (!confirm) return;
 
             try {
@@ -725,6 +864,8 @@
                         isGroup: true,
                         participants: groupData.participants,
                         items: groupData.items, // Already consolidated
+                        shopId: groupData.shopId,
+                        shopName: groupData.shopName,
                         totalPrice: calculateCartTotals(groupData.items).totalPrice,
                         timestamp: new Date(),
                         status: '待處理'
@@ -741,7 +882,9 @@
                         userId: userId,
                         isGroup: false,
                         items: cart,
-                        totalPrice: calculateCartTotals(cart).totalPrice,
+                        shopId: currentShopId,
+                        shopName: shops.find(s => s.id === currentShopId)?.name || '未知店家',
+                        totalPrice: totals.totalPrice,
                         timestamp: new Date(),
                         status: '待處理'
                     });
@@ -760,18 +903,49 @@
         // --- Render Functions ---
 
         function renderUI() {
+            renderShopSelector(); // Ensure shop selector reflects current state
             if (isCustomerMode) {
                 renderMenuList();
-                // Ensure cart state is rendered correctly
                 updateLocalCart();
             } else {
-                renderAdminMenu();
+                renderAdminShopList();
+                if (currentAdminShopId) {
+                    renderAdminMenu();
+                }
+            }
+        }
+
+        function renderShopSelector() {
+            // Customer Shop Selector
+            shopSelector.innerHTML = '';
+            const currentShop = shops.find(s => s.id === currentShopId);
+
+            if (shops.length === 0) {
+                 shopSelector.insertAdjacentHTML('beforeend', `<option value="">無可用店家</option>`);
+                 shopSelector.disabled = true;
+                 startGroupOrderBtn.disabled = true;
+            } else {
+                shops.forEach(shop => {
+                    const selected = shop.id === currentShopId ? 'selected' : '';
+                    shopSelector.insertAdjacentHTML('beforeend', `<option value="${shop.id}" ${selected}>${shop.name}</option>`);
+                });
+                 shopSelector.disabled = currentGroupOrderId !== null;
+                 startGroupOrderBtn.disabled = false;
+                 startGroupOrderBtn.innerHTML = '<i class="ph ph-users-three text-lg mr-2"></i> 發起團購';
             }
         }
 
         function renderMenuList() {
             const container = document.getElementById('menuList');
             container.innerHTML = '';
+            document.getElementById('loadingMenuMessage').classList.add('hidden');
+
+            if (menuItems.length === 0) {
+                document.getElementById('emptyMenuMessage').classList.remove('hidden');
+                return;
+            } else {
+                document.getElementById('emptyMenuMessage').classList.add('hidden');
+            }
 
             menuItems.forEach(item => {
                 const itemHtml = `
@@ -780,7 +954,7 @@
                             <img src="${item.imageUrl || 'https://placehold.co/150x150/e0f2fe/0369a1?text=商品'}" alt="${item.name}" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='https://placehold.co/150x150/e0f2fe/0369a1?text=商品'">
                         </div>
                         <div class="flex-grow">
-                            <h3 class="text-lg font-semibold text-gray-800">${item.name}</h3>
+                            <h3 class="text-lg font-semibold text-gray-800">${item.name} <span class="text-xs text-gray-400">(${item.category})</span></h3>
                             <p class="text-sm text-gray-500">${item.description}</p>
                             <p class="text-xl font-bold text-red-500 mt-1">NT$ ${item.price}</p>
                         </div>
@@ -793,9 +967,41 @@
             });
         }
 
+        function renderAdminShopList() {
+             const container = document.getElementById('shopListContainer');
+             container.innerHTML = '';
+             document.getElementById('noShopsMessage').classList.toggle('hidden', shops.length > 0);
+
+             shops.forEach(shop => {
+                const isCurrent = shop.id === currentAdminShopId;
+                 const shopHtml = `
+                    <div class="bg-white p-3 rounded-lg shadow-sm flex justify-between items-center border ${isCurrent ? 'border-blue-500 ring-2 ring-blue-200' : 'border-gray-200'}">
+                        <p class="font-semibold text-gray-800">${shop.name} ${isCurrent ? '(編輯中)' : ''}</p>
+                        <div class="flex space-x-2">
+                            <button onclick="selectAdminShop('${shop.id}')" class="bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold py-1 px-3 rounded-md transition-colors duration-200">
+                                ${isCurrent ? '取消編輯' : '編輯菜單'}
+                            </button>
+                            <button onclick="deleteShop('${shop.id}')" class="bg-red-500 hover:bg-red-600 text-white text-sm font-semibold py-1 px-3 rounded-md transition-colors duration-200">刪除店家</button>
+                        </div>
+                    </div>
+                 `;
+                 container.insertAdjacentHTML('beforeend', shopHtml);
+             });
+        }
+
         function renderAdminMenu() {
             const container = document.getElementById('menuItemsContainer');
             container.innerHTML = '';
+            document.getElementById('noMenuItemsMessage').classList.toggle('hidden', menuItems.length > 0);
+
+            if (!currentAdminShopId) {
+                document.getElementById('shopMenuManagement').classList.add('hidden');
+                return;
+            }
+
+            const currentShop = shops.find(s => s.id === currentAdminShopId);
+            document.getElementById('currentAdminShopName').textContent = currentShop ? currentShop.name : '未知店家';
+            document.getElementById('shopMenuManagement').classList.remove('hidden');
 
             menuItems.forEach(item => {
                 const itemHtml = `
@@ -896,6 +1102,7 @@
                             <span class="font-semibold text-gray-800 text-sm">${order.timestamp.toDate().toLocaleTimeString()}</span>
                             <span class="text-xs font-medium px-2 py-0.5 rounded-full ${statusColor}">${order.status}</span>
                         </div>
+                        <p class="text-gray-600 text-sm truncate">店家: ${order.shopName || '未知'}</p>
                         <p class="text-gray-600 text-sm truncate">${itemsSummary}</p>
                         ${order.isGroup ? `<p class="text-xs text-indigo-500">團購訂單 (共 ${order.participants.length} 人)</p>` : ''}
                         <p class="text-lg font-bold text-red-600 mt-1">總金額: NT$ ${order.totalPrice}</p>
@@ -906,7 +1113,68 @@
         }
 
 
-        // --- Admin Actions ---
+        // --- Admin Shop Actions ---
+
+        document.getElementById('addNewShopBtn').addEventListener('click', async () => {
+            const shopName = await showModal('新增店家', '請輸入新店家的名稱:', '確定新增', '取消', 'text');
+            if (shopName === false || shopName === null || shopName.trim() === '') return;
+
+            try {
+                await addDoc(collection(db, SHOPS_COLLECTION_PATH), {
+                    name: shopName.trim(),
+                    createdAt: new Date()
+                });
+                await showModal('成功', `店家 ${shopName} 已新增！`);
+            } catch (e) {
+                console.error("Error adding shop:", e);
+                await showModal('錯誤', '新增店家失敗。');
+            }
+        });
+
+        async function deleteShop(shopId) {
+            const shop = shops.find(s => s.id === shopId);
+            const confirm = await showModal('確認刪除店家', `您確定要刪除店家 "${shop.name}" 及其所有菜單項目嗎？`, '確定刪除', '取消');
+            if (!confirm) return;
+
+            try {
+                // To delete a subcollection, you must delete all documents within it first.
+                // We will only delete the main shop document here for simplicity, relying on security rules for safety.
+                // Note: The menu items in the subcollection will become orphaned if not manually deleted.
+
+                await deleteDoc(doc(db, SHOPS_COLLECTION_PATH, shopId));
+                if (shopId === currentAdminShopId) {
+                    currentAdminShopId = null;
+                    document.getElementById('shopMenuManagement').classList.add('hidden');
+                }
+                if (shopId === currentShopId) {
+                    currentShopId = null;
+                }
+                await showModal('成功', `店家 ${shop.name} 已刪除。`);
+            } catch (e) {
+                console.error("Error deleting shop:", e);
+                await showModal('錯誤', '刪除店家失敗。');
+            }
+        }
+
+        async function selectAdminShop(shopId) {
+            if (currentAdminShopId === shopId) {
+                // Deselect
+                currentAdminShopId = null;
+                document.getElementById('shopMenuManagement').classList.add('hidden');
+                if (menuUnsubscribe) {
+                    menuUnsubscribe();
+                    menuItems = [];
+                }
+            } else {
+                // Select and listen to its menu
+                currentAdminShopId = shopId;
+                updateMenuListener(shopId); // Reuse the same listener logic
+            }
+            renderUI(); // Re-render admin shop list to highlight selected one
+        }
+
+
+        // --- Admin Menu Actions ---
 
         document.getElementById('modeToggleBtn').addEventListener('click', async () => {
             if (isCustomerMode) {
@@ -922,37 +1190,50 @@
         });
 
         document.getElementById('addNewItemBtn').addEventListener('click', async () => {
+            if (!currentAdminShopId) {
+                return showModal('提示', '請先在上方選擇一個店家編輯菜單。');
+            }
             const item = { name: '', price: 0, category: '主食', description: '', imageUrl: '' };
             await openItemEditor(item, true);
         });
 
         async function openItemEditor(item, isNew = false) {
-            const name = await showModal('編輯名稱', '請輸入商品名稱', '下一步', '取消', 'text');
+            const shopId = currentAdminShopId || item.shopId;
+            if (!shopId) return showModal('錯誤', '未選擇店家。');
+
+            const name = await showModal('編輯名稱', '請輸入商品名稱', '下一步', '取消', 'text', item.name);
             if (name === false || name === null) return;
             item.name = name;
 
-            const priceStr = await showModal('編輯價格', '請輸入商品價格 (數字)', '下一步', '取消', 'text');
+            const priceStr = await showModal('編輯價格', '請輸入商品價格 (數字)', '下一步', '取消', 'text', item.price.toString());
             if (priceStr === false || priceStr === null) return;
             item.price = parseInt(priceStr);
 
-            const category = await showModal('編輯類別', '請輸入商品類別 (如：主食, 飲料)', '下一步', '取消', 'text');
+            const category = await showModal('編輯類別', '請輸入商品類別 (如：主食, 飲料)', '下一步', '取消', 'text', item.category);
             if (category === false || category === null) return;
             item.category = category;
 
-            const description = await showModal('編輯描述', '請輸入商品描述', '下一步', '取消', 'text');
+            const description = await showModal('編輯描述', '請輸入商品描述', '下一步', '取消', 'text', item.description);
             if (description === false || description === null) return;
             item.description = description;
 
-            const imageUrl = await showModal('圖片 URL', '請貼上商品圖片的網路連結 (可留空)', '儲存', '取消', 'text');
+            const imageUrl = await showModal('圖片 URL', '請貼上商品圖片的網路連結 (可留空)', '儲存', '取消', 'text', item.imageUrl);
             if (imageUrl === false || imageUrl === null) return;
             item.imageUrl = imageUrl || 'https://placehold.co/150x150/e0f2fe/0369a1?text=商品';
 
-            if (isNew) {
-                await addDoc(collection(db, MENU_COLLECTION_PATH), { ...item, createdAt: new Date() });
-            } else {
-                await updateDoc(doc(db, MENU_COLLECTION_PATH, item.id), item);
+            const menuCollectionRef = collection(db, `${SHOPS_COLLECTION_PATH}/${shopId}/menu`);
+
+            try {
+                if (isNew) {
+                    await addDoc(menuCollectionRef, { ...item, createdAt: new Date() });
+                } else {
+                    await updateDoc(doc(menuCollectionRef, item.id), item);
+                }
+                await showModal('成功', '菜單已更新！');
+            } catch (e) {
+                 console.error("Error updating menu item:", e);
+                 await showModal('錯誤', '菜單更新失敗。');
             }
-            await showModal('成功', '菜單已更新！');
         }
 
         async function editMenuItem(itemId) {
@@ -962,11 +1243,14 @@
         }
 
         async function deleteMenuItem(itemId) {
+            if (!currentAdminShopId) return;
+
             const confirm = await showModal('確認刪除', '您確定要刪除這個菜單項目嗎？', '確定刪除', '取消');
             if (!confirm) return;
 
+            const menuCollectionRef = collection(db, `${SHOPS_COLLECTION_PATH}/${currentAdminShopId}/menu`);
             try {
-                await deleteDoc(doc(db, MENU_COLLECTION_PATH, itemId));
+                await deleteDoc(doc(menuCollectionRef, itemId));
                 await showModal('成功', '菜單項目已刪除。');
             } catch (e) {
                 console.error("Error deleting document:", e);
@@ -977,6 +1261,9 @@
         // --- AI Menu Generation Logic ---
 
         document.getElementById('generateMenuBtn').addEventListener('click', async () => {
+            if (!currentAdminShopId) {
+                return showModal('提示', '請先選擇一個店家。');
+            }
             const menuText = document.getElementById('menuInput').value.trim();
             if (!menuText) {
                 return showModal('提示', '請在文字框中貼上您的菜單內容。');
@@ -1080,6 +1367,9 @@
         }
 
         document.getElementById('saveAllAIToMenuBtn').addEventListener('click', async () => {
+            if (!currentAdminShopId) {
+                return showModal('提示', '請先選擇一個店家。');
+            }
             if (aiGeneratedItems.length === 0) {
                 return showModal('提示', '沒有可以儲存的 AI 項目。');
             }
@@ -1087,8 +1377,9 @@
             const confirm = await showModal('確認批量儲存', `確定要將這 ${aiGeneratedItems.length} 個 AI 生成的項目加入菜單嗎？`, '確定儲存', '取消');
             if (!confirm) return;
 
+            const menuCollectionRef = collection(db, `${SHOPS_COLLECTION_PATH}/${currentAdminShopId}/menu`);
             const batch = aiGeneratedItems.map(item => {
-                return addDoc(collection(db, MENU_COLLECTION_PATH), {
+                return addDoc(menuCollectionRef, {
                     ...item,
                     price: parseInt(item.price), // Ensure price is number
                     imageUrl: item.imageUrl || 'https://placehold.co/150x150/e0f2fe/0369a1?text=商品',
@@ -1150,6 +1441,8 @@
         window.deleteMenuItem = deleteMenuItem;
         window.hideCartModal = hideCartModal;
         window.submitOrder = submitOrder;
+        window.deleteShop = deleteShop;
+        window.selectAdminShop = selectAdminShop;
 
         // --- Initial Load ---
         window.onload = function() {
