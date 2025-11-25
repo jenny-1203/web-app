@@ -1,0 +1,7 @@
+{
+  "name": "選擇困難雷達",
+  "description": "An AI-powered food map that finds the best restaurants nearby based on your budget, travel mode, and cravings using Google Maps data.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
